@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  lambda-abac-tags
+  Sample SAM Template for lambda-abac-tags
+
+Globals:
+  Function:
+    Timeout: 5
+    Handler: main
+
+Resources:
+  AllowToBeInvokedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt InvokerRole.Arn
+          Action:
+            - sts:AssumeRole
+            - sts:TagSession
+      Policies:
+        - PolicyName: AllowToBeInvokedInvoke
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt ToBeInvoked.Arn
+                Condition:
+                  "StringEquals":
+                    "aws:ResourceTag/team": "${aws:PrincipalTag/team}"
+
+  Invoker:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: invoker
+      Runtime: go1.x
+      Events:
+        InvokerGETRoute:
+          Type: Api
+          Properties:
+            Path: /invoke
+            Method: GET
+      Environment:
+        Variables:
+          FUNCTION_ARN: !GetAtt ToBeInvoked.Arn
+          ROLE_ARN: !GetAtt AllowToBeInvokedRole.Arn
+
+  ToBeInvoked:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: to-be-invoked
+      Runtime: go1.x
+      Tags:
+        Team: Falcon
+        Department: Engineering
+
+Outputs:
+  APIEndpoint:
+    Description: "API Gateway endpoint URL for Prod environment for First Function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/invoke"
