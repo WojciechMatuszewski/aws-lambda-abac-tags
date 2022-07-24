@@ -4,7 +4,7 @@ Inspired by [this article](https://aws.amazon.com/blogs/compute/scaling-aws-lamb
 
 ## Learnings
 
-- It would be neat for the SAM to know how to build `provided.al2` runtime Go lambdas. To my knowledge, the `go1.x` runtime is deprecated – it does not support AWS Lambda extensions!
+- It would be neat for the SAM to know how to build `provided.al2` runtime Go lambdas. To my knowledge, the `go1.x` runtime is deprecated ? – it does not support the arm64 architecture!
 
 - AWS SAM will create two stages whenever you deploy an AWS Lambda function. The first stage is called "Stage" and the second one is called "Prod". I have no idea why they chose to use _CapitalCase_ for the names. As for the additional "Stage", [refer to this issue](https://github.com/aws/serverless-application-model/issues/191).
 
